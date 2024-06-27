@@ -8,6 +8,8 @@
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
+            background-color: #ffffff; /* Установка белого цвета фона */
+            color: #000000; /* Черный цвет текста */
         }
         .car-container {
             display: flex;
@@ -45,73 +47,169 @@
         .rent-button:hover {
             background-color: #45a049;
         }
+        .calendar-container {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .calendar {
+            max-width: 250px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .calendar-body {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        .day {
+            text-align: center;
+            padding: 5px;
+            cursor: pointer;
+        }
+        .day:hover {
+            background-color: #ddd;
+        }
     </style>
 </head>
 <body>
-    <style>
-        body {
-            background-color: #fff; /* белый цвет фона */
-            color: #000; /* черный цвет текста */
-        }
-    </style>
     <h1>Аренда автомобилей</h1>
 
     <div class="car-container">
-        <!-- Добавляем автомобили динамически с помощью JavaScript -->
+        <!-- Автомобили будут добавлены динамически с помощью JavaScript -->
+    </div>
+
+    <div class="calendar-container" id="calendarContainer">
+        <div class="calendar" id="calendar">
+            <div class="calendar-header">
+                <span id="monthYear"></span>
+                <span style="cursor: pointer;" onclick="closeCalendar()">×</span>
+            </div>
+            <div class="calendar-body" id="calendarBody">
+                <!-- Календарь будет добавлен динамически с помощью JavaScript -->
+            </div>
+        </div>
     </div>
 
     <script>
-        // Данные автомобилей
-        var cars = [
-            {
-                'name': 'DAEWOO MATIZ',
-                'image_url': 'https://avatars.mds.yandex.net/get-autoru-vos/6078333/834ae2ee1cd6d92602ace14d05878fdc/1200x900',
-                'price_per_hour': 800
-            },
-            {
-                'name': 'Daewoo Nexia I',
-                'image_url': 'https://avatars.mds.yandex.net/get-autoru-vos/2164969/5ce63b654351614346c712548514e0f1/1200x900',
-                'price_per_hour': 800
-            }
-            // Добавьте другие автомобили по аналогии
-        ];
-
         var carContainer = document.querySelector('.car-container');
+        var calendarContainer = document.querySelector('.calendar-container');
+        var selectedDate = null;
 
-        // Функция для создания HTML элементов для каждого автомобиля
-        function renderCars(cars) {
-            cars.forEach(function(car) {
-                var carDiv = document.createElement('div');
-                carDiv.classList.add('car');
+        async function getCars() {
+            try {
+                const response = await fetch('http://185.233.187.88:5000/api/cars');
+                const data = await response.json();
 
-                var carImage = document.createElement('img');
-                carImage.src = car.image_url;
-                carImage.alt = car.name;
+                data.forEach(function(car) {
+                    var carDiv = document.createElement('div');
+                    carDiv.classList.add('car');
 
-                var carName = document.createElement('div');
-                carName.classList.add('car-name');
-                carName.textContent = car.name;
+                    var carImage = document.createElement('img');
+                    carImage.src = car.image_url;
+                    carImage.alt = car.name;
 
-                var carPrice = document.createElement('div');
-                carPrice.classList.add('car-price');
-                carPrice.textContent = 'Цена за час: ' + car.price_per_hour + ' руб.';
+                    var carName = document.createElement('div');
+                    carName.classList.add('car-name');
+                    carName.textContent = car.name;
 
-                var rentButton = document.createElement('button');
-                rentButton.classList.add('rent-button');
-                rentButton.textContent = 'Взять в аренду';
-                // Здесь можно добавить логику для обработки нажатия на кнопку
+                    var carPrice = document.createElement('div');
+                    carPrice.classList.add('car-price');
+                    carPrice.textContent = 'Цена за час: ' + car.price_per_hour + ' руб.';
 
-                carDiv.appendChild(carImage);
-                carDiv.appendChild(carName);
-                carDiv.appendChild(carPrice);
-                carDiv.appendChild(rentButton);
+                    var rentButton = document.createElement('button');
+                    rentButton.classList.add('rent-button');
+                    rentButton.textContent = 'Взять в аренду';
+                    rentButton.addEventListener('click', function() {
+                        showCalendar(car.name);
+                    });
 
-                carContainer.appendChild(carDiv);
+                    carDiv.appendChild(carImage);
+                    carDiv.appendChild(carName);
+                    carDiv.appendChild(carPrice);
+                    carDiv.appendChild(rentButton);
+                    carContainer.appendChild(carDiv);
             });
+
+        } catch (error) {
+            console.error('Ошибка при загрузке данных:', error);
+        }
+    }
+
+    async function showCalendar(carName) {
+        selectedDate = null; // Reset selected date
+        var calendar = document.getElementById('calendar');
+        var monthYear = document.getElementById('monthYear');
+        var calendarBody = document.getElementById('calendarBody');
+
+        // Clear previous calendar dates
+        calendarBody.innerHTML = '';
+
+        var today = new Date();
+        var currentMonth = today.getMonth();
+        var currentYear = today.getFullYear();
+
+        monthYear.textContent = months[currentMonth] + ' ' + currentYear;
+
+        var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        var firstDay = new Date(currentYear, currentMonth, 1).getDay();
+
+        var date = 1;
+
+        for (var i = 0; i < 6; i++) {
+            for (var j = 0; j < 7; j++) {
+                if (i === 0 && j < firstDay) {
+                    var dayDiv = document.createElement('div');
+                    dayDiv.classList.add('day');
+                    calendarBody.appendChild(dayDiv);
+                } else if (date > daysInMonth) {
+                    break;
+                } else {
+                    var dayDiv = document.createElement('div');
+                    dayDiv.classList.add('day');
+                    dayDiv.textContent = date;
+                    dayDiv.addEventListener('click', function() {
+                        selectDate(carName, currentYear, currentMonth, this.textContent);
+                    });
+                    calendarBody.appendChild(dayDiv);
+                    date++;
+                }
+            }
         }
 
-        // Вызываем функцию для отображения всех автомобилей
-        renderCars(cars);
-    </script>
+        calendarContainer.style.display = 'block';
+    }
+
+    function selectDate(carName, year, month, day) {
+        selectedDate = new Date(year, month, day);
+        console.log('Selected date:', selectedDate);
+
+        // Example logic to book the car with selected date
+        if (selectedDate) {
+            console.log(`Car "${carName}" booked for ${selectedDate.toLocaleDateString('en-US')}`);
+            // Here you can add your logic to send a booking request to the server
+        }
+
+        closeCalendar();
+    }
+
+    function closeCalendar() {
+        calendarContainer.style.display = 'none';
+    }
+
+    const months = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+
+    // Вызываем функцию для получения данных и отображения всех автомобилей
+    getCars();
+</script>
 </body>
 </html>
