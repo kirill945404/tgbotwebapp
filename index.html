@@ -3,18 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Rental Catalog</title>
+    <title>Прокат автомобилей</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .car-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .car {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 300px;
+        }
+        .car img {
+            max-width: 100%;
+            height: auto;
+        }
+        .car-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .car-price {
+            font-size: 16px;
+        }
+        .rent-button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .rent-button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <h1>Каталог свободных машин</h1>
-    <div class="cars">
-        {% for car in cars %}
-        <div class="car">
-            <h2>{{ car['name'] }}</h2>
-            <img src="{{ car['image_url'] }}" alt="{{ car['name'] }}" width="400">
-            <p><strong>Аренда в час:</strong> {{ car['price_per_hour'] }} рублей</p>
-        </div>
-        {% endfor %}
+    <h1>Аренда автомобилей</h1>
+    
+    <div class="car-container">
+        <!-- Добавляем автомобили динамически с помощью JavaScript -->
     </div>
+
+    <script>
+        // Данные автомобилей
+        var cars = [
+            {
+                'name': 'DAEWOO MATIZ',
+                'image_url': 'https://avatars.mds.yandex.net/get-autoru-vos/6078333/834ae2ee1cd6d92602ace14d05878fdc/1200x900',
+                'price_per_hour': 800
+            },
+            // Добавьте другие автомобили по аналогии
+        ];
+
+        var carContainer = document.querySelector('.car-container');
+
+        // Функция для создания HTML элементов для каждого автомобиля
+        function renderCars(cars) {
+            cars.forEach(function(car) {
+                var carDiv = document.createElement('div');
+                carDiv.classList.add('car');
+
+                var carImage = document.createElement('img');
+                carImage.src = car.image_url;
+                carImage.alt = car.name;
+
+                var carName = document.createElement('div');
+                carName.classList.add('car-name');
+                carName.textContent = car.name;
+
+                var carPrice = document.createElement('div');
+                carPrice.classList.add('car-price');
+                carPrice.textContent = 'Цена за час: ' + car.price_per_hour + ' руб.';
+
+                var rentButton = document.createElement('button');
+                rentButton.classList.add('rent-button');
+                rentButton.textContent = 'Взять в аренду';
+                // Здесь можно добавить логику для обработки нажатия на кнопку
+
+                carDiv.appendChild(carImage);
+                carDiv.appendChild(carName);
+                carDiv.appendChild(carPrice);
+                carDiv.appendChild(rentButton);
+
+                carContainer.appendChild(carDiv);
+            });
+        }
+
+        // Вызываем функцию для отображения всех автомобилей
+        renderCars(cars);
+    </script>
 </body>
 </html>
